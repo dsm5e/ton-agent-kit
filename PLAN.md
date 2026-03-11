@@ -178,7 +178,7 @@ ton-agent-kit/
 
 | День | Задача | Статус |
 |------|--------|--------|
-| **8-9** | Deploy контракта на testnet, wallet MCP tools (create_wallet, set_policy), E2E тесты | ⬜ |
+| **8-9** | Deploy контракта на testnet, wallet MCP tools (create_wallet, set_policy), E2E тесты | ✅ |
 | **10-11** | deploy_contract + call_contract tools, get_audit_log, полный integration test suite | ⬜ |
 | **12-13** | Demo сценарий, README, документация, видео | ⬜ |
 | **14** | Финальное тестирование, submit | ⬜ |
