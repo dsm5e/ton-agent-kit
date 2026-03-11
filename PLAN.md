@@ -169,8 +169,8 @@ ton-agent-kit/
 
 | День | Задача | Статус |
 |------|--------|--------|
-| **1-2** | Setup проекта, MCP сервер skeleton, Read tools (get_balance, get_transactions, get_jetton_info) + unit тесты | ⬜ |
-| **3-4** | Agentic Wallet core: key manager, policy engine, audit logger + unit тесты | ⬜ |
+| **1-2** | Setup проекта, MCP сервер skeleton, Read tools (get_balance, get_transactions, get_jetton_info) + unit тесты | ✅ |
+| **3-4** | Agentic Wallet core: key manager, policy engine, audit logger + unit тесты | ✅ |
 | **5-6** | Write tools (send_ton, send_jetton) + policy validation + integration тесты | ⬜ |
 | **7** | Смарт-контракт AgentWallet.tact + sandbox тесты | ⬜ |
 

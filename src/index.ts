@@ -10,7 +10,7 @@ async function main() {
   const config = loadConfig();
   const api = createTonApi(config);
   const tonClient = createTonClient(config);
-  const server = createServer(api, tonClient);
+  const server = createServer(api, tonClient, config.dataDir);
 
   const transport = new StdioServerTransport();
   await server.connect(transport);

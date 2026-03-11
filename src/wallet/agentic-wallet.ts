@@ -123,7 +123,7 @@ export class AgenticWallet {
     this.auditLogger.log({
       action: 'set_policy',
       tool: 'set_policy',
-      params: { walletAddress, policy: JSON.stringify(policy) },
+      params: { walletAddress, policy: 'updated' },
       result: 'success',
     });
 
