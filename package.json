@@ -1,0 +1,54 @@
+{
+  "name": "ton-agent-kit",
+  "version": "0.1.0",
+  "description": "MCP server for AI agents to read & write on TON blockchain with agentic wallet and policy engine",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "ton-agent-kit": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "test": "jest",
+    "test:unit": "jest tests/unit",
+    "test:integration": "jest tests/integration",
+    "test:contract": "jest tests/contract",
+    "test:e2e": "jest tests/e2e",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint src/ tests/",
+    "deploy": "ts-node scripts/deploy.ts"
+  },
+  "keywords": [
+    "ton",
+    "mcp",
+    "ai-agent",
+    "blockchain",
+    "wallet",
+    "telegram"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.5.0",
+    "@ton/core": "^0.63.0",
+    "@ton/crypto": "^3.3.0",
+    "@ton/ton": "^16.2.2",
+    "dotenv": "^16.4.5",
+    "tonapi-sdk-js": "^2.0.9",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@ton/blueprint": "^0.22.0",
+    "@ton/sandbox": "^0.20.0",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.11.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
