@@ -1,0 +1,626 @@
+#pragma version =0.4.6;
+#pragma allow-post-modification;
+#pragma compute-asm-ltr;
+
+;; AgentWallet_AgentWallet.headers.fc
+;;
+;; Header files for AgentWallet
+;; NOTE: declarations are sorted for optimal order
+;;
+
+;; __tact_context_get
+(int, slice, int, slice) __tact_context_get() inline;
+
+;; __tact_context_get_sender
+slice __tact_context_get_sender() inline;
+
+;; __tact_dict_set_slice_int
+(cell, ()) __tact_dict_set_slice_int(cell d, int kl, slice k, int v, int vl) inline;
+
+;; __tact_dict_exists_slice
+int __tact_dict_exists_slice(cell d, int kl, slice k) inline;
+
+;; $ChangeOwnerOk$_store
+builder $ChangeOwnerOk$_store(builder build_0, (int, slice) v) inline;
+
+;; $ChangeOwnerOk$_store_cell
+cell $ChangeOwnerOk$_store_cell((int, slice) v, builder b) inline;
+
+;; $AgentWallet$_store
+builder $AgentWallet$_store(builder build_0, (slice, cell, int, int, int, int) v) inline;
+
+;; $AgentWallet$_load
+(slice, ((slice, cell, int, int, int, int))) $AgentWallet$_load(slice sc_0) inline;
+
+;; $Context$_get_value
+_ $Context$_get_value((int, slice, int, slice) v) inline;
+
+;; $PolicyInfo$_to_external
+(int, int, int, int) $PolicyInfo$_to_external(((int, int, int, int)) v) inline;
+
+;; $AgentWallet$init$_load
+(slice, ((slice, int, int))) $AgentWallet$init$_load(slice sc_0) inline;
+
+;; $AgentWallet$_contract_init
+(slice, cell, int, int, int, int) $AgentWallet$_contract_init(slice $owner, int $maxTransaction, int $dailyLimit) impure inline;
+
+;; $AgentWallet$_contract_load
+(slice, cell, int, int, int, int) $AgentWallet$_contract_load() impure inline;
+
+;; $AgentWallet$_contract_store
+() $AgentWallet$_contract_store((slice, cell, int, int, int, int) v) impure inline;
+
+;; $AgentWallet$_fun_balance
+((slice, cell, int, int, int, int), int) $AgentWallet$_fun_balance((slice, cell, int, int, int, int) $self) impure inline_ref;
+
+;; $AgentWallet$_fun_isAllowed
+((slice, cell, int, int, int, int), int) $AgentWallet$_fun_isAllowed((slice, cell, int, int, int, int) $self, slice $addr) impure inline_ref;
+
+;; $PolicyInfo$_constructor_maxTransaction_dailyLimit_spentToday_lastResetTime
+((int, int, int, int)) $PolicyInfo$_constructor_maxTransaction_dailyLimit_spentToday_lastResetTime(int $maxTransaction, int $dailyLimit, int $spentToday, int $lastResetTime) inline;
+
+;; $AgentWallet$_fun_policyInfo
+((slice, cell, int, int, int, int), (int, int, int, int)) $AgentWallet$_fun_policyInfo((slice, cell, int, int, int, int) $self) impure inline_ref;
+
+;; $MessageParameters$_constructor_bounce_to_value_mode_body
+((int, cell, int, slice, int)) $MessageParameters$_constructor_bounce_to_value_mode_body(int $bounce, slice $to, int $value, int $mode, cell $body) inline;
+
+;; $AgentWallet$_fun_reply
+((slice, cell, int, int, int, int), ()) $AgentWallet$_fun_reply((slice, cell, int, int, int, int) $self, cell $body) impure inline;
+
+;; $AgentWallet$_fun_requireOwner
+((slice, cell, int, int, int, int), ()) $AgentWallet$_fun_requireOwner((slice, cell, int, int, int, int) $self) impure inline_ref;
+
+;; $AgentWallet$_fun_owner
+((slice, cell, int, int, int, int), slice) $AgentWallet$_fun_owner((slice, cell, int, int, int, int) $self) impure inline_ref;
+
+;; $SendParameters$_constructor_to_value_mode_body
+((int, cell, cell, cell, int, slice, int)) $SendParameters$_constructor_to_value_mode_body(slice $to, int $value, int $mode, cell $body) inline;
+
+;; $ChangeOwnerOk$_constructor_queryId_newOwner
+((int, slice)) $ChangeOwnerOk$_constructor_queryId_newOwner(int $queryId, slice $newOwner) inline;
+
+
+;; AgentWallet_AgentWallet.stdlib.fc
+global (int, slice, int, slice) __tact_context;
+global slice __tact_context_sender;
+global cell __tact_child_contract_codes;
+global int __tact_randomized;
+
+(cell, int) __tact_dict_delete(cell dict, int key_len, slice index) asm(index dict key_len) """
+    DICTDEL
+""";
+
+(slice, int) __tact_dict_get(cell dict, int key_len, slice index) asm(index dict key_len) """
+    DICTGET NULLSWAPIFNOT
+""";
+
+(int, slice, int, slice) __tact_context_get() inline {
+    return __tact_context;
+}
+
+slice __tact_context_get_sender() inline {
+    return __tact_context_sender;
+}
+
+(cell, ()) __tact_dict_set_slice_int(cell d, int kl, slice k, int v, int vl) inline {
+    if (null?(v)) {
+        var (r, ok) = __tact_dict_delete(d, kl, k);
+        return (r, ());
+    } else {
+        return (dict_set_builder(d, kl, k, begin_cell().store_int(v, vl)), ());
+    }
+}
+
+int __tact_dict_exists_slice(cell d, int kl, slice k) inline {
+    var (r, ok) = __tact_dict_get(d, kl, k);
+    return ok;
+}
+
+int $global_now() impure asm """
+    NOW
+""";
+
+int $global_myBalance() impure asm """
+    BALANCE FIRST
+""";
+
+() $global_nativeReserve(int $amount, int $mode) impure asm """
+    RAWRESERVE
+""";
+
+() $global_message((int, cell, int, slice, int) $params) impure asm """
+    NEWC
+    b{01} STSLICECONST  // store tag = $0 and ihr_disabled = true
+    1 STI               // store `bounce`
+    b{000} STSLICECONST // store bounced = false and src = addr_none
+    STSLICE             // store `to`
+    SWAP
+    STGRAMS             // store `value`
+    106 PUSHINT         // 1 + 4 + 4 + 64 + 32 + 1
+    STZEROES
+    // → Stack state
+    // s0: Builder
+    // s1: `body`
+    // s2: `mode`
+    STDICT
+    ENDC
+    SWAP
+    SENDRAWMSG
+""";
+
+() $global_send((int, cell, cell, cell, int, slice, int) $params) impure asm """
+    NEWC
+    b{01} STSLICECONST  // store tag = $0 and ihr_disabled = true
+    1 STI               // store `bounce`
+    b{000} STSLICECONST // store bounced = false and src = addr_none
+    STSLICE             // store `to`
+    SWAP
+    STGRAMS             // store `value`
+    105 PUSHINT         // 1 + 4 + 4 + 64 + 32
+    STZEROES            // store currency_collection, ihr_fee, fwd_fee, created_lt and created_at
+    // → Stack state
+    // s0: Builder
+    // s1: `data`
+    // s2: `code`
+    // s3: `body`
+    // s4: `mode`
+
+    // Group 2: Placing the Builder after code and data, then checking those for nullability
+    s2 XCHG0
+    DUP2
+    ISNULL
+    SWAP
+    ISNULL
+    AND
+    // → Stack state
+    // s0: -1 (true) if `data` and `code` are both null, 0 (false) otherwise
+    // s1: `code`
+    // s2: `data`
+    // s3: Builder
+    // s4: `body`
+    // s5: `mode`
+
+    // Group 3: Left branch of the IFELSE, executed if s0 is -1 (true)
+    <{
+        DROP2 // drop `data` and `code`, since either of those is null
+        b{0} STSLICECONST
+    }> PUSHCONT
+
+    // Group 3: Right branch of the IFELSE, executed if s0 is 0 (false)
+    <{
+        // _ split_depth:(Maybe (## 5))
+        //   special:(Maybe TickTock)
+        //   code:(Maybe ^Cell)
+        //   data:(Maybe ^Cell)
+        //   library:(Maybe ^Cell)
+        // = StateInit;
+        ROT                // place message Builder on top
+        b{10} STSLICECONST // store Maybe = true, Either = false
+        // Start composing inlined StateInit
+        b{00} STSLICECONST // store split_depth and special first
+        STDICT             // store code
+        STDICT             // store data
+        b{0} STSLICECONST  // store library
+    }> PUSHCONT
+
+    // Group 3: IFELSE that does the branching shown above
+    IFELSE
+    // → Stack state
+    // s0: Builder
+    // s1: null or StateInit
+    // s2: `body`
+    // s3: `mode`
+
+    // Group 4: Finalizing the message
+    STDICT // store `body` as ref with an extra Maybe bit, since `body` might be null
+    ENDC
+    // → Stack state
+    // s0: Cell
+    // s1: `mode`
+
+    // Group 5: Sending the message, with `mode` on top
+    SWAP
+    SENDRAWMSG // https://github.com/tact-lang/tact/issues/1558
+""";
+
+((slice, cell, int, int, int, int), ()) $AgentWallet$_fun_reply((slice, cell, int, int, int, int) $self, cell $body) impure inline {
+    var (($self'owner, $self'allowedAddresses, $self'maxTransaction, $self'dailyLimit, $self'spentToday, $self'lastResetTime)) = $self;
+    slice $to = __tact_context_get_sender();
+    int $bounce = true;
+    if (false) {
+        int $balance = $global_myBalance();
+        int $balanceBeforeMessage = ($balance - $Context$_get_value(__tact_context_get()));
+        if (($balanceBeforeMessage < 0)) {
+            $global_nativeReserve(0, 0);
+            $global_message($MessageParameters$_constructor_bounce_to_value_mode_body($bounce, $to, 0, 130, $body));
+            return (($self'owner, $self'allowedAddresses, $self'maxTransaction, $self'dailyLimit, $self'spentToday, $self'lastResetTime), ());
+        }
+    }
+    $global_message($MessageParameters$_constructor_bounce_to_value_mode_body($bounce, $to, 0, 66, $body));
+    return (($self'owner, $self'allowedAddresses, $self'maxTransaction, $self'dailyLimit, $self'spentToday, $self'lastResetTime), ());
+}
+
+((slice, cell, int, int, int, int), ()) $AgentWallet$_fun_requireOwner((slice, cell, int, int, int, int) $self) impure inline_ref {
+    var (($self'owner, $self'allowedAddresses, $self'maxTransaction, $self'dailyLimit, $self'spentToday, $self'lastResetTime)) = $self;
+    throw_unless(132, ( equal_slices_bits(__tact_context_get_sender(), $self'owner) ));
+    return (($self'owner, $self'allowedAddresses, $self'maxTransaction, $self'dailyLimit, $self'spentToday, $self'lastResetTime), ());
+}
+
+((slice, cell, int, int, int, int), slice) $AgentWallet$_fun_owner((slice, cell, int, int, int, int) $self) impure inline_ref {
+    var (($self'owner, $self'allowedAddresses, $self'maxTransaction, $self'dailyLimit, $self'spentToday, $self'lastResetTime)) = $self;
+    var $fresh$ret_3 = $self'owner;
+    return (($self'owner, $self'allowedAddresses, $self'maxTransaction, $self'dailyLimit, $self'spentToday, $self'lastResetTime), $fresh$ret_3);
+}
+
+;; AgentWallet_AgentWallet.constants.fc
+;; Cell uFJlE6rydGFDoH9g+y19bh7ys+ALGg4IzFYuv7nLQJk=
+cell __gen_cell_cell_b8526513aaf2746143a07f60fb2d7d6e1ef2b3e00b1a0e08cc562ebfb9cb4099() asm """
+    B{b5ee9c72410101010014000024000000006167656e742d7472616e73666572472bf5e1} B>boc PUSHREF
+""";
+
+;; AgentWallet_AgentWallet.storage.fc
+;;
+;; Type: Context
+;; TLB: _ bounceable:bool sender:address value:int257 raw:^slice = Context
+;;
+
+_ $Context$_get_value((int, slice, int, slice) v) inline {
+    var (v'bounceable, v'sender, v'value, v'raw) = v;
+    return v'value;
+}
+
+;;
+;; Type: SendParameters
+;; TLB: _ mode:int257 body:Maybe ^cell code:Maybe ^cell data:Maybe ^cell value:int257 to:address bounce:bool = SendParameters
+;;
+
+((int, cell, cell, cell, int, slice, int)) $SendParameters$_constructor_to_value_mode_body(slice $to, int $value, int $mode, cell $body) inline {
+    return ($mode, $body, null(), null(), $value, $to, true);
+}
+
+;;
+;; Type: MessageParameters
+;; TLB: _ mode:int257 body:Maybe ^cell value:int257 to:address bounce:bool = MessageParameters
+;;
+
+((int, cell, int, slice, int)) $MessageParameters$_constructor_bounce_to_value_mode_body(int $bounce, slice $to, int $value, int $mode, cell $body) inline {
+    return ($mode, $body, $value, $to, $bounce);
+}
+
+;;
+;; Type: ChangeOwnerOk
+;; Header: 0x327b2b4a
+;; TLB: change_owner_ok#327b2b4a queryId:uint64 newOwner:address = ChangeOwnerOk
+;;
+
+builder $ChangeOwnerOk$_store(builder build_0, (int, slice) v) inline {
+    var (v'queryId, v'newOwner) = v;
+    build_0 = store_uint(build_0, 846932810, 32);
+    build_0 = build_0.store_uint(v'queryId, 64);
+    build_0 = build_0.store_slice(v'newOwner);
+    return build_0;
+}
+
+cell $ChangeOwnerOk$_store_cell((int, slice) v, builder b) inline {
+    return $ChangeOwnerOk$_store(b, v).end_cell();
+}
+
+((int, slice)) $ChangeOwnerOk$_constructor_queryId_newOwner(int $queryId, slice $newOwner) inline {
+    return ($queryId, $newOwner);
+}
+
+;;
+;; Type: PolicyInfo
+;; TLB: _ maxTransaction:coins dailyLimit:coins spentToday:coins lastResetTime:uint32 = PolicyInfo
+;;
+
+(int, int, int, int) $PolicyInfo$_to_external(((int, int, int, int)) v) inline {
+    var (v'maxTransaction, v'dailyLimit, v'spentToday, v'lastResetTime) = v; 
+    return (v'maxTransaction, v'dailyLimit, v'spentToday, v'lastResetTime);
+}
+
+((int, int, int, int)) $PolicyInfo$_constructor_maxTransaction_dailyLimit_spentToday_lastResetTime(int $maxTransaction, int $dailyLimit, int $spentToday, int $lastResetTime) inline {
+    return ($maxTransaction, $dailyLimit, $spentToday, $lastResetTime);
+}
+
+;;
+;; Type: AgentWallet
+;; TLB: _ owner:address allowedAddresses:dict<address, bool> maxTransaction:coins dailyLimit:coins spentToday:coins lastResetTime:uint32 = AgentWallet
+;;
+
+builder $AgentWallet$_store(builder build_0, (slice, cell, int, int, int, int) v) inline {
+    var (v'owner, v'allowedAddresses, v'maxTransaction, v'dailyLimit, v'spentToday, v'lastResetTime) = v;
+    build_0 = build_0.store_slice(v'owner);
+    build_0 = build_0.store_dict(v'allowedAddresses);
+    build_0 = build_0.store_varuint16(v'maxTransaction);
+    build_0 = build_0.store_varuint16(v'dailyLimit);
+    build_0 = build_0.store_varuint16(v'spentToday);
+    build_0 = build_0.store_uint(v'lastResetTime, 32);
+    return build_0;
+}
+
+(slice, ((slice, cell, int, int, int, int))) $AgentWallet$_load(slice sc_0) inline {
+    var v'owner = sc_0~load_msg_addr();
+    var v'allowedAddresses = sc_0~load_dict();
+    var v'maxTransaction = sc_0~load_varuint16();
+    var v'dailyLimit = sc_0~load_varuint16();
+    var v'spentToday = sc_0~load_varuint16();
+    var v'lastResetTime = sc_0~load_uint(32);
+    return (sc_0, (v'owner, v'allowedAddresses, v'maxTransaction, v'dailyLimit, v'spentToday, v'lastResetTime));
+}
+
+(slice, ((slice, int, int))) $AgentWallet$init$_load(slice sc_0) inline {
+    var v'owner = sc_0~load_msg_addr();
+    var v'maxTransaction = sc_0~load_int(257);
+    var v'dailyLimit = sc_0~load_int(257);
+    return (sc_0, (v'owner, v'maxTransaction, v'dailyLimit));
+}
+
+(slice, cell, int, int, int, int) $AgentWallet$_contract_load() impure inline {
+    slice $sc = get_data().begin_parse();
+    int $loaded = $sc~load_int(1);
+    if ($loaded) {
+        return $sc~$AgentWallet$_load();
+    }
+    else {
+        (slice $owner, int $maxTransaction, int $dailyLimit) = $sc~$AgentWallet$init$_load();
+        $sc.end_parse();
+        return $AgentWallet$_contract_init($owner, $maxTransaction, $dailyLimit);
+    }
+}
+
+() $AgentWallet$_contract_store((slice, cell, int, int, int, int) v) impure inline {
+    builder b = begin_cell();
+    b = b.store_int(true, 1);
+    b = $AgentWallet$_store(b, v);
+    set_data(b.end_cell());
+}
+
+;;
+;; Contract AgentWallet functions
+;;
+
+(slice, cell, int, int, int, int) $AgentWallet$_contract_init(slice $owner, int $maxTransaction, int $dailyLimit) impure inline {
+    var (($self'owner, $self'allowedAddresses, $self'maxTransaction, $self'dailyLimit, $self'spentToday, $self'lastResetTime)) = (null(), null(), null(), null(), null(), null());
+    $self'owner = $owner;
+    $self'maxTransaction = $maxTransaction;
+    $self'dailyLimit = $dailyLimit;
+    $self'spentToday = 0;
+    $self'lastResetTime = $global_now();
+    return ($self'owner, $self'allowedAddresses, $self'maxTransaction, $self'dailyLimit, $self'spentToday, $self'lastResetTime);
+}
+
+((slice, cell, int, int, int, int), int) $AgentWallet$_fun_balance((slice, cell, int, int, int, int) $self) impure inline_ref {
+    var (($self'owner, $self'allowedAddresses, $self'maxTransaction, $self'dailyLimit, $self'spentToday, $self'lastResetTime)) = $self;
+    var $fresh$ret_0 = $global_myBalance();
+    return (($self'owner, $self'allowedAddresses, $self'maxTransaction, $self'dailyLimit, $self'spentToday, $self'lastResetTime), $fresh$ret_0);
+}
+
+((slice, cell, int, int, int, int), int) $AgentWallet$_fun_isAllowed((slice, cell, int, int, int, int) $self, slice $addr) impure inline_ref {
+    var (($self'owner, $self'allowedAddresses, $self'maxTransaction, $self'dailyLimit, $self'spentToday, $self'lastResetTime)) = $self;
+    var $fresh$ret_1 = __tact_dict_exists_slice($self'allowedAddresses, 267, $addr);
+    return (($self'owner, $self'allowedAddresses, $self'maxTransaction, $self'dailyLimit, $self'spentToday, $self'lastResetTime), $fresh$ret_1);
+}
+
+((slice, cell, int, int, int, int), (int, int, int, int)) $AgentWallet$_fun_policyInfo((slice, cell, int, int, int, int) $self) impure inline_ref {
+    var (($self'owner, $self'allowedAddresses, $self'maxTransaction, $self'dailyLimit, $self'spentToday, $self'lastResetTime)) = $self;
+    var $fresh$ret_2 = $PolicyInfo$_constructor_maxTransaction_dailyLimit_spentToday_lastResetTime($self'maxTransaction, $self'dailyLimit, $self'spentToday, $self'lastResetTime);
+    return (($self'owner, $self'allowedAddresses, $self'maxTransaction, $self'dailyLimit, $self'spentToday, $self'lastResetTime), $fresh$ret_2);
+}
+
+;;
+;; Get methods of a Contract AgentWallet
+;;
+
+_ %balance() method_id(104128) {
+    var self = $AgentWallet$_contract_load();
+    var res = self~$AgentWallet$_fun_balance();
+    return res;
+}
+
+_ %isAllowed(slice $addr) method_id(125272) {
+    slice $addr = $addr;
+    var self = $AgentWallet$_contract_load();
+    var res = self~$AgentWallet$_fun_isAllowed($addr);
+    return res;
+}
+
+_ %policyInfo() method_id(114287) {
+    var self = $AgentWallet$_contract_load();
+    var res = self~$AgentWallet$_fun_policyInfo();
+    return $PolicyInfo$_to_external(res);
+}
+
+_ %owner() method_id(83229) {
+    var self = $AgentWallet$_contract_load();
+    var res = self~$AgentWallet$_fun_owner();
+    return res;
+}
+
+;;
+;; Routing of a Contract AgentWallet
+;;
+
+;; message opcode reader utility: only binary receivers
+;; Returns 32 bit message opcode, otherwise throws the "Invalid incoming message" exit code
+(slice, int) ~load_opcode_internal(slice s) asm( -> 1 0) "32 LDUQ 130 THROWIFNOT";
+
+() recv_internal(int msg_value, cell in_msg_cell, slice in_msg) impure {
+    
+    ;; Context
+    var cs = in_msg_cell.begin_parse();
+    cs~skip_bits(2);
+    var msg_bounceable = cs~load_int(1);
+    var msg_bounced = cs~load_int(1);
+    slice msg_sender_addr = cs~load_msg_addr();
+    __tact_context = (msg_bounceable, msg_sender_addr, msg_value, cs);
+    __tact_context_sender = msg_sender_addr;
+    
+    ;; Load contract data
+    var ($self'owner, $self'allowedAddresses, $self'maxTransaction, $self'dailyLimit, $self'spentToday, $self'lastResetTime) = $AgentWallet$_contract_load();
+    
+    ;; Handle bounced messages
+    if (msg_bounced) { return (); }
+    int op = 0;
+    int in_msg_length = slice_bits(in_msg);
+    if (in_msg_length >= 32) {
+        op = in_msg~load_uint(32);
+    }
+    ;; Receive AddAllowedAddress message
+    if (op == 0x1) {
+        var $msg'address = in_msg~load_msg_addr();
+        ($self'owner, $self'allowedAddresses, $self'maxTransaction, $self'dailyLimit, $self'spentToday, $self'lastResetTime)~$AgentWallet$_fun_requireOwner();
+        $self'allowedAddresses~__tact_dict_set_slice_int(267, $msg'address, true, 1);
+        $AgentWallet$_contract_store(($self'owner, $self'allowedAddresses, $self'maxTransaction, $self'dailyLimit, $self'spentToday, $self'lastResetTime));
+        return ();
+    }
+    
+    ;; Receive RemoveAllowedAddress message
+    if (op == 0x2) {
+        var $msg'address = in_msg~load_msg_addr();
+        ($self'owner, $self'allowedAddresses, $self'maxTransaction, $self'dailyLimit, $self'spentToday, $self'lastResetTime)~$AgentWallet$_fun_requireOwner();
+        $self'allowedAddresses~__tact_dict_delete(267, $msg'address);
+        $AgentWallet$_contract_store(($self'owner, $self'allowedAddresses, $self'maxTransaction, $self'dailyLimit, $self'spentToday, $self'lastResetTime));
+        return ();
+    }
+    
+    ;; Receive SetSpendingLimit message
+    if (op == 0x3) {
+        var $msg'maxTransaction = in_msg~load_varuint16();
+        var $msg'dailyLimit = in_msg~load_varuint16();
+        ($self'owner, $self'allowedAddresses, $self'maxTransaction, $self'dailyLimit, $self'spentToday, $self'lastResetTime)~$AgentWallet$_fun_requireOwner();
+        throw_unless(24704, ($msg'maxTransaction > 0));
+        throw_unless(45442, ($msg'dailyLimit > 0));
+        $self'maxTransaction = $msg'maxTransaction;
+        $self'dailyLimit = $msg'dailyLimit;
+        $AgentWallet$_contract_store(($self'owner, $self'allowedAddresses, $self'maxTransaction, $self'dailyLimit, $self'spentToday, $self'lastResetTime));
+        return ();
+    }
+    
+    ;; Receive TransferTon message
+    if (op == 0x4) {
+        var $msg'to = in_msg~load_msg_addr();
+        var $msg'amount = in_msg~load_varuint16();
+        slice $senderAddr = __tact_context_get_sender();
+        int $isOwner = ( equal_slices_bits($senderAddr, $self'owner) );
+        int $isAllowed = __tact_dict_exists_slice($self'allowedAddresses, 267, $senderAddr);
+        throw_unless(42435, ( ($isOwner) ? (true) : ($isAllowed) ));
+        throw_unless(61135, ($msg'amount > 0));
+        throw_unless(54615, ($msg'amount <= ($global_myBalance() - 50000000)));
+        ifnot ($isOwner) {
+            throw_unless(60497, ($msg'amount <= $self'maxTransaction));
+            if ((($global_now() - $self'lastResetTime) >= 86400)) {
+                $self'spentToday = 0;
+                $self'lastResetTime = $global_now();
+            }
+            throw_unless(28386, (($self'spentToday + $msg'amount) <= $self'dailyLimit));
+            $self'spentToday = $self'spentToday + $msg'amount;
+        }
+        $global_send($SendParameters$_constructor_to_value_mode_body($msg'to, $msg'amount, 3, __gen_cell_cell_b8526513aaf2746143a07f60fb2d7d6e1ef2b3e00b1a0e08cc562ebfb9cb4099()));
+        $AgentWallet$_contract_store(($self'owner, $self'allowedAddresses, $self'maxTransaction, $self'dailyLimit, $self'spentToday, $self'lastResetTime));
+        return ();
+    }
+    
+    ;; Receive ChangeOwner message
+    if (op == 0x819dbe99) {
+        var $msg'queryId = in_msg~load_uint(64);
+        var $msg'newOwner = in_msg~load_msg_addr();
+        ($self'owner, $self'allowedAddresses, $self'maxTransaction, $self'dailyLimit, $self'spentToday, $self'lastResetTime)~$AgentWallet$_fun_requireOwner();
+        $self'owner = $msg'newOwner;
+        ($self'owner, $self'allowedAddresses, $self'maxTransaction, $self'dailyLimit, $self'spentToday, $self'lastResetTime)~$AgentWallet$_fun_reply($ChangeOwnerOk$_store_cell($ChangeOwnerOk$_constructor_queryId_newOwner($msg'queryId, $msg'newOwner), begin_cell()));
+        $AgentWallet$_contract_store(($self'owner, $self'allowedAddresses, $self'maxTransaction, $self'dailyLimit, $self'spentToday, $self'lastResetTime));
+        return ();
+    }
+    
+    ;; Receive empty message
+    if ((op == 0) & (in_msg_length <= 32)) {
+        $AgentWallet$_contract_store(($self'owner, $self'allowedAddresses, $self'maxTransaction, $self'dailyLimit, $self'spentToday, $self'lastResetTime));
+        return ();
+    }
+    ;; Throw if not handled
+    throw(130);
+}
+
+
+() __tact_selector_hack_asm() impure asm """
+@atend @ 1 {
+        execute current@ context@ current!
+        {
+            // The core idea of this function is to save gas by avoiding unnecessary dict jump, when recv_internal/recv_external is called
+            // We want to extract recv_internal/recv_external from the dict and select needed function
+            // not by jumping to the needed function by it's index, but by using usual IF statements.
+
+            }END> b> // Close previous builder, now we have a cell of previous code on top of the stack
+
+            <{ // Start of the new code builder
+                SETCP0
+                // Swap the new code builder with the previous code, now we have previous code on top of the stack
+                swap
+                // Transform cell to slice and load first ref from the previous code, now we have the dict on top of the stack
+                <s ref@
+
+                // Extract the recv_internal from the dict
+                dup 0 swap @procdictkeylen idict@ { "internal shortcut error" abort } ifnot
+                swap
+
+                // Delete the recv_internal from the dict
+                0 swap @procdictkeylen idict- drop
+                // Delete the recv_external from the dict (it's okay if it's not there)
+                -1 swap @procdictkeylen idict- drop
+                // Delete the __tact_selector_hack from the dict
+                65535 swap @procdictkeylen idict- drop
+
+                // Bring the code builder from the bottom of the stack
+                // because if recv_external extraction is optional, and the number of elements on the stack is not fixed
+                depth 1- roll
+                // Swap with the dict from which we extracted recv_internal and (maybe) recv_external
+                swap
+
+                // Check if the dict is empty
+                dup null?
+                // Store a copy of this flag in the bottom of the stack
+                dup depth 1- -roll
+                {
+                    // If the dict is empty, just drop it (it will be null if it's empty)
+                    drop
+                }
+                {
+                    // If the dict is not empty, prepare continuation to be stored in c3
+                    <{
+                        // Save this dict as first ref in this continuation, it will be pushed in runtime by DICTPUSHCONST
+                        swap @procdictkeylen DICTPUSHCONST
+                        // Jump to the needed function by it's index
+                        DICTIGETJMPZ
+                        // If such key is not found, throw 11 along with the key as an argument
+                        11 THROWARG
+                    }> PUSHCONT
+                    // Store the continuation in c3
+                    c3 POP
+                } cond
+
+                // Function id is on top of the (runtime) stack
+                DUP IFNOTJMP:<{
+                    // place recv_internal here
+                    DROP swap @addop
+                }>
+
+                // Bring back the flag, indicating if the dict is empty or not from the bottom of the stack
+                depth 1- roll
+                {
+                    // If the dict is empty, throw 11
+                    11 THROWARG
+                }
+                {
+                    // If the dict is not empty, jump to continuation from c3
+                    c3 PUSH JMPX
+                } cond
+            }> b>
+        } : }END>c
+        current@ context! current!
+    } does @atend !
+""";
+
+() __tact_selector_hack() method_id(65535) {
+    return __tact_selector_hack_asm();
+}

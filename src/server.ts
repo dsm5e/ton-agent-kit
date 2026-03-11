@@ -9,6 +9,8 @@ import { getJettonInfo } from './tools/read/get-jetton-info';
 import { getContractInfo } from './tools/read/get-contract-info';
 import { sendTon } from './tools/write/send-ton';
 import { sendJetton } from './tools/write/send-jetton';
+import { deployAgentWalletTool } from './tools/write/deploy-contract';
+import { callContractTool } from './tools/write/call-contract';
 import { createWalletTool } from './tools/wallet/create-wallet';
 import { getWalletInfoTool } from './tools/wallet/get-wallet-info';
 import { setPolicyTool } from './tools/wallet/set-policy';
@@ -95,6 +97,33 @@ export function createServer(
       jetton_decimals: z.number().optional().describe('Jetton decimals (default: 9)'),
     },
     async (params) => sendJetton(tonClient, keyManager, policyEngine, auditLogger, params)
+  );
+
+  server.tool(
+    'deploy_agent_wallet',
+    'Deploy an AgentWallet smart contract with on-chain policy enforcement',
+    {
+      wallet_address: z.string().describe('Deployer wallet address'),
+      password: z.string().describe('Wallet password'),
+      owner_address: z.string().describe('Owner address for the deployed contract'),
+      max_transaction_amount: z.string().optional().describe('Max transaction per agent in TON (default: "1")'),
+      daily_spending_limit: z.string().optional().describe('Daily limit for agents in TON (default: "5")'),
+      initial_balance: z.string().optional().describe('Initial TON to send to contract (default: "0.5")'),
+    },
+    async (params) => deployAgentWalletTool(tonClient, keyManager, auditLogger, params)
+  );
+
+  server.tool(
+    'call_contract',
+    'Call an AgentWallet contract method (add_allowed_address, remove_allowed_address, set_spending_limit, transfer_ton, get_balance, get_policy_info, is_allowed)',
+    {
+      wallet_address: z.string().describe('Caller wallet address (for write methods)'),
+      password: z.string().describe('Wallet password (for write methods)'),
+      contract_address: z.string().describe('AgentWallet contract address'),
+      method: z.string().describe('Method name to call'),
+      args: z.record(z.string()).optional().describe('Method arguments as key-value pairs'),
+    },
+    async (params) => callContractTool(tonClient, keyManager, policyEngine, auditLogger, params)
   );
 
   // === Wallet Tools ===
