@@ -1,0 +1,14 @@
+{
+    "$schema": "http://raw.githubusercontent.com/tact-lang/tact/main/src/config/configSchema.json",
+    "projects": [
+        {
+            "name": "AgentWallet",
+            "path": "./contracts/agent_wallet.tact",
+            "output": "./build/AgentWallet",
+            "mode": "full",
+            "options": {
+                "debug": true
+            }
+        }
+    ]
+}
